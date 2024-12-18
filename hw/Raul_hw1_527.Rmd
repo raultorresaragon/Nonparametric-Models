@@ -1,0 +1,552 @@
+---
+title: "Homework 1"
+author: "Raul Torres Aragon"
+date: "4/6/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(527)
+library(tidyverse)
+
+```
+
+
+# Problem 1
+
+### (a)  
+Given an estimator $\hat\theta$ of a fixed parameter $\theta$, show that the MSE of $\hat\theta$ decouples as:  
+$$
+E[(\hat\theta - \theta)^2] = [E(\hat\theta)-\theta]^2 + Var(\hat\theta)
+$$
+
+Start with the definition of MSE and add and subtract $E(\hat\theta)$:  
+$$
+E[(\hat\theta - \theta)^2] =  \\
+E[(\hat\theta - E(\hat\theta) + E(\hat\theta) - \theta)^2] =  \\
+E[([\hat\theta - E(\hat\theta)] + [E(\hat\theta) - \theta)])^2] =
+$$
+
+Expand the squared binomial  
+$$
+E[([\hat\theta - E(\hat\theta)]^2 - 2[\hat\theta - E(\hat\theta)][E(\hat\theta) - \theta)] + [E(\hat\theta) - \theta)]^2)] =
+$$  
+
+By the linearity of Expectation and by property $E(cX) = cE(X)$, noting that $E[\hat\theta]$ and $\theta$ are constants,  
+$$
+E[([\hat\theta - E(\hat\theta)]^2] + E[(E(\theta) - \theta)^2)] - 2E([\hat\theta - E(\hat\theta)][E(\hat\theta) - \theta)]) = \\
+Var(\hat\theta) + [E(\hat\theta) - \theta]^2 - 0
+$$  
+Now, to show that $2E([\hat\theta - E(\hat\theta)][-E(\hat\theta) + \theta)])=0$, let's call $E(\hat\theta)$ $\mu$,   
+$$
+2E([\hat\theta - E(\hat\theta)][E(\hat\theta) - \theta)]) = \\
+2E([\hat\theta - \mu][\mu - \theta)]) = \\  
+2[\theta - \mu]E([\mu - \hat\theta)]) = \\
+2[\theta - \mu][\mu - E(\hat\theta)]) = \\ 
+2[\theta - \mu][\mu - \mu]) = \\
+2[\theta - \mu](0) = 0
+$$
+
+### (b)  
+For a non-negative random variable $T$, verify that if $E[T] \leq a$ then $P(\frac{T}{a}>\frac{1}{\epsilon})$  
+
+First, I prove Markov's inequality which states $P(T \geq \epsilon) \leq \frac{E(T)}{\epsilon}$.  
+
+Let T be a non-negative random variable, then
+$$
+E(T) = \sum_ttp(t)  \\
+\sum_t tp(t) \geq \sum_{t\geq\epsilon}tp(t)
+$$  
+Now, note that $t \geq \epsilon$, and $\epsilon > 0$  
+
+$$
+\sum_{t \geq \epsilon} tp(t) \geq \sum_{t\geq\epsilon}\epsilon p(t) \\ 
+\sum_{t \geq \epsilon} tp(t) \geq \epsilon\sum_{t\geq\epsilon} p(t) \\
+\sum_{t \geq \epsilon} tp(t) \geq \epsilon P(T \geq \epsilon) \\
+E(T) \geq \epsilon P(T \geq \epsilon) \\
+\frac{E(T)}{\epsilon} \geq P(T \geq \epsilon) \\
+P(T \geq \epsilon) \leq \frac{E(T)}{\epsilon} 
+$$
+Now, given that $a$ and $\epsilon$ are constants, and by manipulating Markov's inequality a bit, we get: 
+
+$$
+P(\frac{T}{a} \gt \frac{1}{\epsilon}) \leq \frac{E(\frac{T}{a})}{\frac{1}{\epsilon}} \\
+P(\frac{T}{a} \gt \frac{1}{\epsilon}) \leq \epsilon E(\frac{T}{a})
+$$
+
+Now, notice that $E(\frac{T}{a}) = \frac{1}{a}E(T)$, and since $E(T)<a$ then,   
+
+$$
+P(\frac{T}{a} \gt \frac{1}{\epsilon}) \leq \epsilon E(\frac{T}{a}) \leq \epsilon \frac{1}{a}a\\  
+P(\frac{T}{a} \gt \frac{1}{\epsilon}) \leq \epsilon E(\frac{T}{a}) \leq \epsilon \\
+P(\frac{T}{a} \gt \frac{1}{\epsilon}) \leq \epsilon
+$$
+
+### (c)  
+If $x\sim F$ (with each $x_i \in R^p$) with $E[x_i]=0$, and $var(x_i)=\Sigma$, and $y_i = x_i^T\beta+\epsilon_i$ with $\epsilon \sim G$ with $E[\epsilon_i]=0$, $var(\epsilon_i) = \sigma^2$. And assume the $x's$ and the $\epsilon$'s are independent. Show that  
+$$
+\sqrt{n}(\hat\beta-\beta) \to N(0,\sigma^2\Sigma^{-1})
+$$
+where $\hat{\beta} = (X^TX)^{-1}X^Ty$ (hint use Slutsky's theorem).  
+
+To show the above result, one needs to show that $\hat{\beta} - \beta$ is an asymptotically linear estimate (ALE). Then one has to show that the variance of the influence function of the ALE is $\sigma^2\Sigma^{-1}$.  
+To show that $\hat{\beta} - \beta$ is ALE start with the definition of $\hat{\beta}$.  
+$$
+\hat{\beta} = (X^TX)^{-1}X^Ty =  \\
+(X^TX)^{-1}X^T(X\beta+\epsilon) = \\
+\hat{\beta}-\beta = (X^TX)^{-1}X^T\epsilon
+$$  
+and by switching to non-matrix form we can appreciate the influence function better.  
+
+$$
+= (\frac{1}{n}\sum_i^nX_iX_i^T)^{-1}(\frac{1}{n}\sum_i^nX_i\epsilon_i)
+$$
+Now, ignoring the inverse, the left term converges to something we call $\Sigma_x$, and by Continuous Mapping theorem, it converges to $\Sigma_x^{-1}$. Substituting what the left term converges to allows to throw into the right term to get:  
+
+$$
+\frac{1}{n}\sum_i^n \Sigma_x^{-1}X_i\epsilon_i + [(\frac{1}{n}\sum_i^n X_i X_i^T)^{-1}-\Sigma_x^{-1}][\frac{1}{n}\sum_i^n X_i\epsilon_i]  
+$$  
+Now,$\frac{1}{n}\sum_i^n X_i X_i^T$ converges to $\Sigma_x^{-1}$, so the term in the first set of brackets converges to 0. And the term in the second set of brackets is an empirical average with iid observations also converging to 0. In other words, we have an empirical average plus a term that converges to 0 (at $O_p(n^{-\frac{1}{2}})$).  Hence, $\hat{\beta}$ is ALE for $\beta$ and as such it converges in distribution to $\mathcal{N}(0, var(\phi(X,Y))$, where $\phi(X,Y)$ is the influence function $\Sigma_x^{-1}X\epsilon_i$ or $\Sigma_x^{-1}X(Y-X^T\beta)$.   
+
+On to the variance:  
+
+First note this result by the Law of Total Variance:  
+
+$$
+Var(X\epsilon) = \\
+E(Var(X\epsilon|X))+Var[E(X\epsilon|X)] = \\
+E(XVar(\epsilon|X)X^T) + Var[XE(\epsilon|X)] = \\
+E(X\sigma^2X^T) + 0 = \\  
+\sigma^2E[XX^T] = \sigma^2\Sigma_x
+$$
+
+$$
+Var[\phi(X,Y)] = Var(\Sigma_x^{-1}X(Y-X^T\beta)) = \\
+Var(\Sigma_x^{-1}X\epsilon) = \\
+\Sigma_x^{-1}Var(X\epsilon)\Sigma_x^{-1} = \\
+\Sigma_x^{-1} \sigma^2 \Sigma_x \Sigma_x^{-1} = \\
+\sigma^2\Sigma_x^{-1}
+$$  
+
+Thus we see that by CLT and because $\hat{\beta}$ is an ALE of $\beta$,  
+$$
+\sqrt{n}(\hat\beta-\beta) \to N(0,\sigma^2\Sigma^{-1})
+$$
+
+# Problem 2  
+This problem is about conducting a basic simulation study (in R) comparing parametric and non-parametric rates. Suppose $x_i \sim U[0,1]$, and $y_i=f(x_i)+\epsilon_i$ where $\epsilon_i\sim N(0,1)$).  
+For different $f$, we will explore the appropriateness of parametric vs non-parametric methods.
+
+For each of the following, compare rates for $\frac{1}{n}\sum_i (\hat{f}(x_i) − f(x_i))^2$ where $\hat{f}$ is estimated by  
+(i) linear regression;  
+
+(ii) parametric polynomial regression on polynomials (in x) of degrees 2 to 5;  
+
+(iii) Nadaraya-Watson estimation with a “box” kernel, and  
+
+(iv) Nadaraya-Watson with a “Gaussian” kernel.  
+
+For both NW estimators make an appropriate choice of bandwidth (and defend this choice). 
+
+
+```{r}
+fit_models <- function(X, Y, n){
+  lm <- lm(Y~X)
+  poly2 <- lm(Y~poly(X, degree = 2))
+  poly3 <- lm(Y~poly(X, degree = 3))
+  poly4 <- lm(Y~poly(X, degree = 4))
+  poly5 <- lm(Y~poly(X, degree = 5))
+  nwbox <- ksmooth(X, Y, kernel = "box", bandwidth = n^(-1/3))
+  nwgau <- ksmooth(X, Y, kernel = "normal")
+  models <- list(lm, poly2, poly3, poly4, poly5, nwbox, nwgau )
+  models
+}
+
+get_yhat <- function(mymodel, X){
+    yhat <- NULL
+    if(class(mymodel) == "lm") {
+      yhat <- predict(mymodel) |> as.vector()
+    } else if(class(mymodel) == "list") {
+      yhat <- vector(mode = "numeric", length = length(X))
+      for(i in 1:length(X)) {
+        yhat[i] <- mymodel$y[which.min(abs(mymodel$x-X[i]))]
+      }
+      yhat
+    }
+    else {
+      stop("something happened: could not get yhat")
+    }
+}
+
+get_mse <- function(mymodel, Y, X) {
+  o <- mean((Y-get_yhat(mymodel, X))^2)
+}
+
+gen_data <- function(n, Y) {
+  X <- runif(n, 0, 1)
+  e <- rnorm(n, 0, 1)
+  if(stringr::str_to_lower(Y) == "y1") { Y <- 2*X + e}
+  else if(stringr::str_to_lower(Y) == "y2") { Y <- sin(2*pi*X) + e}
+  else { Y <- sin(30*X) + e}
+  data <- data.frame(X, Y, e)
+}
+
+run_models <- function(X, Y, n){
+  models <- fit_models(X, Y, n)
+  yhats <- purrr::map(models, get_yhat, X)
+  mses <-purrr::map_dbl(models, get_mse, Y=Y, X=X)
+  o <- list("models" = models, "yhats" = yhats, "mses" = mses)
+}
+
+gen_plot <- function(n = c(50,100,500), Y = "y1", colors, ltys) {
+  
+  for(i in n) {
+    df <- gen_data(i, Y)
+    X_sorted <- sort(df$X)
+    if(stringr::str_to_lower(Y) == "y1") {      Y_sorted <- 2*X_sorted + rnorm(n, 0, 1)}
+    else if(stringr::str_to_lower(Y) == "y2") { Y_sorted <- sin(2*pi*X_sorted) + rnorm(n, 0, 1)}
+    else {                                      Y_sorted <- sin(30*X_sorted) + rnorm(n, 0, 1)}
+    yhats <- run_models(X_sorted, Y_sorted, n)$yhats
+    
+    if(stringr::str_to_lower(Y) == "y1") {      
+      curve(2*x, from = 0, to = 1, xlab = "x", ylab = Y, col="black", lwd=3)
+    } else if(stringr::str_to_lower(Y) == "y2") { 
+      curve(sin(2*pi*x), from = 0, to = 1, xlab = "x", ylab = Y, col="black", lwd=3)
+    } else {
+      curve(sin(30*x), from = 0, to = 1, xlab = "x", ylab = Y, col="black", lwd=3)
+    }
+    points(df$X, df$Y, col = "gray")
+    #colors <- c("blue","darkgreen","darkred","red","black")    
+    #ltys <- c(1,1,1,2,2)
+    for(j in 1:length(colors)){
+      lines(X_sorted, yhats[[j]], col = colors[j], lty = ltys[j])
+    }
+  }
+}
+
+```
+
+*I selected bandwidth of $n^{-1/3}$ based on the derivations in class, which showed that this bandwidth is the optimum for balancing the high bias that a low bandwidth gives us and the low variance that a higher N gives us. As the charts will show, NW curves hug the true relationship better when N is higher.*  
+
+
+### (a)   
+$f(x) = 2x$  
+
+```{r plots1a}
+colors <- c("darkblue","darkgreen","darkred","darkorange1","darkviolet","red","black")
+ltys <- c(rep(1,5),2,2)
+par(mfrow = c(1,3))
+gen_plot(n=100, Y="y1", colors = colors, ltys = ltys)
+legend(0.4, 0.5, 
+       legend=c("true","lm", "poly2", "poly3","poly4","poly5","NW_box", "NW_gauss"),
+       col=c("black",colors), 
+       lty=c(1,ltys), cex=0.8)
+gen_plot(n = 500, Y = "y1", colors = colors, ltys = ltys)
+gen_plot(n = 1000, Y = "y1", colors = colors, ltys = ltys)
+
+
+
+```
+
+```{r mses1a, warning=FALSE}
+t <- tibble(V1=numeric(), V2=numeric(), V3=numeric(), V4=numeric(), V5=numeric(), V6=numeric(),
+            V7=numeric(), V8=numeric())
+for(n in c(100, 500, 1000, 2000)){
+  df <- gen_data(n, "y1")
+  t <- t |> bind_rows(as.data.frame(t(c(n,run_models(df$X, df$Y, n=n)$mses))))
+}
+names(t) <- c("N","lm","poly2", "poly3","poly4","poly5","NW_box", "NW_gauss")
+for(i in 1:nrow(t)) { t$best[i] <- names(t)[which(t[i,] == min(t[i,2:5]))] }
+print(t)
+
+```
+
+### (b)  
+$f(x) = \sin(2\pi x)$  
+```{r}
+colors <- c("darkblue","darkgreen","darkred","darkorange1","darkviolet","red","black")
+ltys <- c(rep(1,5),2,2)
+par(mfrow = c(1,3))
+gen_plot(n=100, Y="y2", colors = colors, ltys = ltys)
+legend(0.5, 1, 
+       legend=c("true","lm", "poly2", "poly3","poly4","poly5","NW_box", "NW_gauss"),
+       col=c("black",colors), 
+       lty=c(1,ltys), cex=0.8)
+gen_plot(n = 500, Y = "y2", colors = colors, ltys = ltys)
+gen_plot(n = 1000, Y = "y2", colors = colors, ltys = ltys)
+```
+```{r}
+t <- tibble(V1=numeric(), V2=numeric(), V3=numeric(), V4=numeric(), V5=numeric(), V6=numeric(),
+            V7=numeric(), V8=numeric())
+for(n in c(100, 500, 1000, 2000)){
+  df <- gen_data(n, "y2")
+  t <- t |> bind_rows(as.data.frame(t(c(n,run_models(df$X, df$Y, n=n)$mses))))
+}
+names(t) <- c("N","lm","poly2", "poly3","poly4","poly5","NW_box", "NW_gauss")
+for(i in 1:nrow(t)) { t$best[i] <- names(t)[which(t[i,] == min(t[i,2:5]))] }
+print(t)
+
+```
+
+
+
+
+### (c)  
+$f(x) = \sin(30x)$  
+
+```{r}
+colors <- c("darkblue","darkgreen","darkred","darkorange1","darkviolet","red","black")
+ltys <- c(rep(1,5),2,2)
+par(mfrow = c(1,3))
+gen_plot(n=100, Y="y3", colors = colors, ltys = ltys)
+legend(0.4, -0.5, 
+       legend=c("true","lm", "poly2", "poly3","poly4","poly5","NW_box", "NW_gauss"),
+       col=c("black",colors), 
+       lty=c(1,ltys), cex=0.8)
+gen_plot(n = 500, Y = "y3", colors = colors, ltys = ltys)
+gen_plot(n = 1000, Y = "y3", colors = colors, ltys = ltys)
+```
+
+```{r mses1c, warning=FALSE}
+t <- tibble(V1=numeric(), V2=numeric(), V3=numeric(), V4=numeric(), V5=numeric(), V6=numeric(),
+            V7=numeric(), V8=numeric())
+for(n in c(100, 500, 1000, 2000)){
+  df <- gen_data(n, "y3")
+  t <- t |> bind_rows(as.data.frame(t(c(n,run_models(df$X, df$Y, n=n)$mses))))
+}
+names(t) <- c("N","lm","poly2", "poly3","poly4","poly5","NW_box", "NW_gauss")
+for(i in 1:nrow(t)) { t$best[i] <- names(t)[which(t[i,] == min(t[i,2:5]))] }
+print(t)
+
+
+```
+
+For each of these, calculate MSE for varying values of n for each estimator. Make appropriate plot(s) to compare these estimators. Give a short writeup stating comparisons/conclusions.  
+The R commands replicate, poly, lm, predict, rnorm, and runif, ksmooth might come in handy.  
+
+*Judging by the plots and the reported MSEs, smoothing estimators and high-degree polynomials obtain the lowest MSE (as expected). This does not mean that on unseen data they will outperform the other models. In fact, for $Y1$, where we know the real relationship is linear, <code>lm</code> should do better in unseen data. The same goes for <code>poly2</code> in $Y2$. NW and high-degree polynomials seem to be tricked or lured up and down by the noise. However, when the relationship is highly non-linear as in $Y3$ a higher-degree polynomial or a smoothing algorithm might be more appropriate.*  
+
+
+# Problem 3  
+(skipped)  
+
+# Problem 4  
+For this problem, we use the <code>fev</code> data discussed in class. Let $y$ be <code>fev</code> and the covariate be <code>height</code>. Fit a kernel regression estimate of the form $y = f(x) + \epsilon$.  
+
+```{r, warning = FALSE, include = FALSE}
+df <- read_csv("fev.csv")
+df <- df[sample(400), ]; n <- nrow(df)
+bws <- c(n^(-1/3), n^(-1/12), 1, 3, 5, 10, 15)
+```
+
+### (a)  
+For a rectangular kernel, use leave-one-out cross validation and five-fold cross validation to choose the bandwidth. Compare the choices of bandwidth and the resulting fits.
+```{r}
+## LOOCV
+mses <- vector("numeric", length = length(bws))
+j <- 0
+for(h in bws){
+  j <- j + 1
+  mse <- vector("numeric", length = nrow(df))
+  for(i in 1:nrow(df)) {
+    y_test  <- df$fev[i];  x_test  <- df$height[i]
+    y_train <- df$fev[-i]; x_train <- df$height[-i]
+    fit <- ksmooth(y_train, x_train, kernel = "box", bandwidth = h)
+    yhat <- fit$y[which.min(abs(fit$x-x_test))]
+    mse[i] <- (y_test - yhat)^2
+  }
+  mses[j] <- mean(mse)
+}
+best_h_LOOCV <- bws[which(mses == min(mses))]
+print(round(mses,1))
+print(best_h_LOOCV)
+
+
+fit <- ksmooth(df$fev, df$height, kernel = "box", bandwidth = best_h_LOOCV)
+yhat <- vector("numeric", length = nrow(df))
+for(i in 1:nrow(df)) {
+  yhat[i] <- fit$y[which.min(abs(fit$x-df$height[i]))]
+}
+MSE <- mean((df$fev - yhat)^2)
+print(paste("MSE using the best h is", round(MSE,2)))
+
+loocv_mses <- mses
+
+```
+
+
+```{r}
+## CV
+
+# create five folds
+folds <- cut(seq(1, nrow(df)), breaks=10, labels = FALSE)
+mses <- vector("numeric", length = length(bws))
+j <- 0
+for(h in bws){
+  j <- j + 1
+  mse <- vector("numeric", length = length(unique(folds)))
+  for(f in 1:length(unique(folds))) {
+    
+    i_test <- which(folds==f, arr.ind = TRUE)
+    y_test  <- df$fev[i_test];  x_test  <- df$height[i_test]
+    y_train <- df$fev[-i_test]; x_train <- df$height[-i_test]
+    
+    fit <- ksmooth(y_train, x_train, kernel = "box", bandwidth = h)
+    yhat <- vector("numeric", length = length(y_test))
+    for(i in 1:length(y_test)) {
+        yhat[i] <- fit$y[which.min(abs(fit$x-x_test[i]))]
+    }
+    mse[f] <- mean((y_test - yhat)^2)
+  }
+  mses[j] <- mean(mse)
+}
+best_h_5FCV <- bws[which(mses == min(mses))]
+
+print(round(mses,1))
+print(best_h_5FCV)
+
+fit <- ksmooth(df$fev, df$height, kernel = "box", bandwidth = best_h_5FCV)
+yhat <- vector("numeric", length = nrow(df))
+for(i in 1:nrow(df)) {
+  yhat[i] <- fit$y[which.min(abs(fit$x-df$height[i]))]
+}
+MSE <- mean((df$fev - yhat)^2)
+print(paste("MSE using the best h is", round(MSE,2)))
+
+fcv_mses <- mses
+
+```
+
+```{r}
+plot(loocv_mses~bws, xlab = "h", ylab = "MSE", type = "l", main = "MSE using rectangular kernel")
+lines(fcv_mses~bws, xlab = "h", ylab = "MSE", type = "l", lty = 2)
+legend(10, 4550, 
+       legend=c("LOOCV","5fCV"),
+       lty=c(1,2))
+```
+
+
+### (b)  
+Repeat (a) using a Epanechnikov kernel.  
+
+
+```{r}
+
+# create a function that provides the K
+
+epinechnikov <- function(x0, x, h) {
+  t <- abs(x-x0)/h
+  d <- ifelse(abs(t)<=1, 3/4*(1-t^2), 0)
+}
+
+
+# create my own Nadaraya-Watson function
+
+nad_wat <- function(x, y, h, kernel = "epinechnikov") {
+  
+  yhat <- vector("numeric", length = length(x))
+  for(i in 1:length(x)){
+    k <- epinechnikov(x[i], x, h)
+    ys_of_xs_within_h <- ifelse(x %in% x[(x<x[i]+h & x[i]-h<x)], y, 0)
+    #stopifnot(length(y) == length(k))
+    yhat[i] <- (k %*% ys_of_xs_within_h)/sum(k)
+  }
+  o <- data.frame("yhat" = yhat, "x" = x)
+  o
+}
+
+# the above functions can be vectorized to become way more efficient. 
+# If I had the time, I'd do that.
+
+
+
+```
+
+```{r}
+
+## LOOCV
+mses <- vector("numeric", length = length(bws))
+j <- 0
+for(h in bws){
+  j <- j + 1
+  mse <- vector("numeric", length = nrow(df))
+  for(i in 1:nrow(df)) {
+    y_test  <- df$fev[i];  x_test  <- df$height[i]
+    y_train <- df$fev[-i]; x_train <- df$height[-i]
+    fit <- nad_wat(y_train, x_train, h = h)
+    yhat <- fit$yhat[which.min(abs(fit$x-x_test))]
+    mse[i] <- (y_test - yhat)^2
+  }
+  mses[j] <- mean(mse)
+}
+best_h_LOOCV <- bws[which(mses == min(mses))]
+print(round(mses,1))
+print(paste("the best h is", best_h_LOOCV))
+
+
+yhat <- nad_wat(df$fev, df$height, h = best_h_LOOCV)$yhat
+MSE <- mean((df$fev - yhat)^2)
+print(paste("MSE using the best h is", round(MSE,2)))
+
+loocv_mses_epan <- mses
+```
+
+
+
+
+```{r}
+## CV
+rm(list = c("mses","mse","x_test","y_test","x_train","y_train","fit","i","j","h","yhat"))
+
+# create five folds
+folds <- cut(seq(1, nrow(df)), breaks=10, labels = FALSE)
+mses <- vector("numeric", length = length(bws))
+j <- 0
+for(h in bws){
+  j <- j + 1
+  mse <- vector("numeric", length = length(unique(folds)))
+  for(f in 1:length(unique(folds))) {
+    
+    i_test <- which(folds==f, arr.ind = TRUE)
+    y_test  <- df$fev[i_test];  x_test  <- df$height[i_test]
+    y_train <- df$fev[-i_test]; x_train <- df$height[-i_test]
+    
+    fit <- nad_wat(y_train, x_train, h = h)
+    yhat <- vector("numeric", length = length(y_test))
+    for(i in 1:length(y_test)) {
+        yhat[i] <- fit$yhat[which.min(abs(fit$x-x_test[i]))]
+    }
+    mse[f] <- mean((y_test - yhat)^2)
+  }
+  mses[j] <- mean(mse)
+}
+best_h_5FCV <- bws[which(mses == min(mses))]
+
+print(round(mses,1))
+print(paste("the best h is", best_h_5FCV))
+
+fit <- nad_wat(df$fev, df$height, h = best_h_5FCV)
+yhat <- fit$yhat
+MSE <- mean((df$fev - yhat)^2)
+print(paste("MSE using the best h is", round(MSE,2)))
+
+fcv_mses_epan <- mses
+
+```
+
+```{r}
+plot(loocv_mses~bws, xlab = "h", ylab = "MSE", type = "l", main = "MSE using rectangular/Epan kernel")
+lines(fcv_mses~bws, xlab = "h", ylab = "MSE", type = "l", lty = 2)
+lines(loocv_mses_epan~bws, col = "orange", type = "l", lty = 1)
+lines(fcv_mses_epan~bws, col = "orange", type = "l", lty = 2) 
+legend(10, 4500, 
+       legend=c("LOOCV rec","5fCV rec", "LOOCV Epan", "5fCV Epan"),
+       col = c("black","black","orange","orange"),
+       lty=c(1,2))
+```
+
+*As we can see, both kernels seem to reach the minimum MSE, however, when doing 5-fold CV, the run time was much faster. In this case, I'd go for 5-fold CV given that the resulting MSE is the same*
+
+
+

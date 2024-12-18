@@ -1,0 +1,238 @@
+---
+title: "Homework 3"
+author: "Raul Torres Aragon"
+date: "5/17/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+```
+
+# Problem 1  
+Suppose we have n pairs of observations $(x_i,y_i)$ with both $x_i  \in [0, 1]$, $y_i \in R$. Imagine we would like to solve the smoothing spline problem:  
+
+$$
+\hat{f} \leftarrow \text{argmin}_{f} \sum_{i=1}^n(y_i-f(x_i))^2+\lambda\int_0^1{(f^{''}(x))^2dx}
+$$  
+Suppose rather than optimizing over all possible twice differentiable $f$, we instead preselect a set of basis functions $\psi_j(x)$, j = 1, ... , J (for example, perhaps $\psi_j(x) = x^j$ might be used), and would like to solve the smoothing spline problem where $f$ is restricted to be a linear combination of these basis functions. In other words, we would like to solve:  
+
+$$
+\hat{\beta} \leftarrow \text{argmin}_{\beta}\sum_{i=1}^n \Bigl(y_i-\sum_{j=1}^J\beta_j\psi_j(x_i)\Bigr)^2+\lambda\int_0^1\Bigl[\frac{\partial}{\partial x}\bigl(\sum_{j=1}^J\beta_j\psi_j(x)\bigr)\Bigr]^2dx
+$$  
+
+with $\hat{f} \leftarrow \sum_{j=1}^p\hat{\beta}_j\psi_j$.  
+
+## (a)  
+Show that we can rewrite (1), in matrix/vector form as:  
+
+$$
+\hat{\beta} \leftarrow \text{argmin}_{\beta} ||\boldsymbol{y}-\Psi\beta||_2^2+\lambda\beta^T\Omega\beta
+$$  
+
+First, define matrix $\Psi$ as a row vector of length J functions $\psi$ on $x_i$, then define $\beta$ as a vector of length J of $\beta$ coefficients. Then, $\sum_{j=1}^J\beta_j\psi_j(x_i) = \boldsymbol{\Psi \beta}$.  
+Now, recall the norm of a vector is defined as $||\boldsymbol{w}|| = \sqrt{w_1^2 + w_2^2... +w_n^2}$, hence, for vectors $\boldsymbol{x}, \boldsymbol{y} \in R^n$, we have that $\sum_{i=1}^n \bigl(y_i-\sum_{j=1}^J\beta_j\psi_j(x_i)\bigr)^2=||\boldsymbol{y}-\Psi\beta||_2^2$.  
+
+Now, if we expand the square in the second term of the expression, we get:  
+
+$$
+\lambda \sum_{j=1}^J\beta_j^2\int_0^1\frac{\partial}{\partial x}\psi_j(x)dx + 2\lambda \sum_{j\neq l}^J\beta_j\beta_l \int_0^1\frac{\partial}{\partial x}\psi_j(x)\psi_l(x)dx
+$$  
+This can be set up as a matrix if we define matrix $\Omega$ with entry j,l $\int_0^1\frac{\partial}{\partial x}\psi_j(x)\psi_l(x)dx$, then  
+
+$$
+\lambda\int_0^1\Bigl[\frac{\partial}{\partial x}\bigl(\sum_{j=1}^J\beta_j\psi_j(x)\bigr)\Bigr]^2dx = \lambda\beta^T\Omega\beta
+$$  
+
+## (b)  
+Show that the solution is given by  
+
+$$
+\hat{\beta} = (\boldsymbol{\Psi}^T\boldsymbol{\Psi}+\lambda\Omega)^{-1}\boldsymbol{\Psi}^T\boldsymbol{y}
+$$  
+
+Now that the expression in 1(a) is in matrix notation, one can appreciate that the minimzation problem is very similar to the minimization problem in least squares with a penalty. Therefore,  
+
+$$
+\hat{\beta} \leftarrow \text{argmin}_{\beta} ||\boldsymbol{y}-\Psi\beta||_2^2+\lambda\beta^T\Omega\beta = \\
+\hat{\beta} \leftarrow \text{argmin}_{\beta} (\boldsymbol{y}-\Psi\beta)^T(\boldsymbol{y}-\Psi\beta)+\lambda\beta^T\Omega\beta = \\
+\hat{\beta} \leftarrow \text{argmin}_{\beta} (\boldsymbol{y}^T\boldsymbol{y}-\boldsymbol{y}^T\Psi\beta+\beta^T\psi^T\Psi\beta)+\lambda\beta^T\Omega\beta \\
+\frac{\partial}{\partial \beta}\Bigl[(\boldsymbol{y}^T\boldsymbol{y}-\boldsymbol{y}^T\psi\beta+\beta^T\Psi^T\Psi\beta)+\lambda\beta^T\Omega\beta)\Bigr] = \\
+-2\Psi^T\boldsymbol{y}+2\beta\Psi^T\Psi+2\beta\lambda\Omega := 0  \\
+-\Psi^T\boldsymbol{y}+\beta (\Psi^T\Psi+\lambda\Omega) = 0 \\
+\hat{\beta} = (\Psi^T\Psi+\lambda\Omega)^{-1}\Psi^T\boldsymbol{y}
+$$  
+
+## (c)  
+Roughly how many basis vectors (J) do you think should be used? (as a function of n). What happens if we use a large number of basis vectors (eg. $J>n$?). How does this compare to using a projection estimator without penalization? (do we need to cross-validate over both penalty parameter and number of basis vectors? Which do we use to control the bias/variance tradeoff?)  
+
+Ideally we want to have more observations than basis vectors, but given the penalty, we might be able to find a solution and still compute $\boldsymbol{\hat{\beta}}$.  
+When using a projector vector without penalization, then when J>n we wouldn't be able to invert the $\Psi^T\Psi$ matrix (recall the penalty is gone so $+\lambda \Omega$ are not part of the matrix we want to invert) and thus won't find a solution vector $\boldsymbol{\hat{\beta}}$.  
+Yes, we could use CV to tune for both number of basis vectors and $\lambda$. We could use a grid of pair values to iterate over and test RMSE, for example. The $\lambda$ value controls for the bias-variance tradeoff: The more basis vectors, the more flexible (low bias) our predicting function will be, but $\lambda$ governs what basis vectors stay in the function and which ones are out, so I'd say $\lambda$ governs the bias-variance tradeoff.  
+
+  
+# Problem 2  
+
+This problem is about conducting a basic simulation study (in R) comparing parametric and non-parametric rates. Suppose $x_i \sim U[0,1]$, and $y_i=f(x_i)+\epsilon_i$ where $\epsilon_i\sim N(0,1)$).  
+For different $f$, we will explore the appropriateness of parametric vs non-parametric methods.
+
+For each of the following, compare rates for $\frac{1}{n}\sum_i (\hat{f}(x_i) − f(x_i))^2$ where $\hat{f}$ is estimated by  
+(i) linear regression;  
+
+(ii) parametric polynomial regression on polynomials (in x) of degrees 2 to 5;  
+
+(iii) Nadaraya-Watson estimation with a “box” kernel,   
+
+(iv) Nadaraya-Watson with a “Gaussian” kernel,  
+
+(v) local polynomial regression (loess function)  
+
+```{r}
+set.seed(527) 
+
+lin <- function(x) { return(2*x) }
+sin2pi <- function(x) { return(sin(2*pi*x)) }
+sin30 <- function(x) { return(sin(30*x)) }
+
+
+simulate <- function(n, func) {
+  
+    #sampling x and epsilon
+    x <- sort(runif(n)) # needed  because the kernel functions output values with ordered x 
+    eps <- rnorm(n)
+
+    #calculate y
+    y <- func(x) + eps
+  
+    #fit linear and polynomial models
+    y_1 <- lm(y~x)$fitted.values
+    y_2 <- lm(y~poly(x,2))$fitted.values 
+    y_3 <- lm(y~poly(x,3))$fitted.values 
+    y_4 <- lm(y~poly(x,4))$fitted.values 
+    y_5 <- lm(y~poly(x,5))$fitted.values
+    
+    #choice of kernel bandwitdth for NW
+    h <- 0.5*n^(-1/3)
+    
+    #fit NW estimators with box and Gaussian kernels
+    y_box <- ksmooth(x, y, kernel = "box", x.points = x, bandwidth = h)$y 
+    y_gauss <- ksmooth(x, y, kernel = "normal", bandwidth = h)$y
+    
+    #choice of bandwitdth for polynomial 
+    a1 <- n^(-1/(2*1+1))
+    a2 <- n^(-1/(2*2+1))
+    
+    # local polynomial using LOESS
+    y_loess1 <- loess(y~x, method = "loess", degree = 1, span = a1, family = "symmetric")$fitted
+    y_loess2 <- loess(y~x, method = "loess", degree = 2, span = a2, family = "symmetric")$fitted
+  
+    #calculate and format the MSEs
+    mse <- colMeans( (cbind(y_1, y_2, y_3, y_4, y_5, y_box, y_gauss, y_loess1, y_loess2) - func(x))^2 ) 
+    names(mse) <- c("Linear", paste("PolyDeg", 2:5), "NW-Box","NW-Gauss", paste0("LocalPoly d", 1:2))
+    mse
+}
+
+get_mses <- function(n_replic, n, func) {
+    replicate(n_replic, simulate(n, func)) |> 
+      matrix(ncol = 9, byrow = TRUE) |> 
+      colMeans() |> 
+      `names<-`(c("Linear", paste("PolyDeg", 2:5), "NW-Box", "NW-Gauss", paste0("LocalPoly d", 1:2)))
+}
+
+```  
+
+```{r, warning=FALSE}
+N <- 1e2
+data_lin <- rbind(get_mses(N, 5e2, lin), 
+                  get_mses(N, 1e3, lin), 
+                  get_mses(N, 2e3, lin), 
+                  get_mses(N, 5e3, lin)) |> as.data.frame() |> 
+               mutate(n = c(500, 1e3, 2e3, 5e3)) |> 
+               pivot_longer(cols = "Linear":"LocalPoly d2", names_to = "Model", values_to = "MSE")
+
+data_sin2pi <- rbind(get_mses(N, 5e2, sin2pi), 
+                     get_mses(N, 1e3, sin2pi), 
+                     get_mses(N, 2e3, sin2pi), 
+                     get_mses(N, 5e3, sin2pi)) |> as.data.frame() |> 
+                 mutate(n = c(500, 1e3, 2e3, 5e3)) |> 
+                 pivot_longer(cols = "Linear":"LocalPoly d2", names_to = "Model", values_to = "MSE")
+
+data_sin30 <- rbind(get_mses(N, 5e2, sin30), 
+                    get_mses(N, 1e3, sin30), 
+                    get_mses(N, 2e3, sin30), 
+                    get_mses(N, 5e3, sin30)) |> as.data.frame() |> 
+                mutate(n = c(500, 1e3, 2e3, 5e3)) |> 
+                pivot_longer(cols = "Linear":"LocalPoly d2", names_to = "Model", values_to = "MSE")
+
+```  
+
+```{r}
+myplot <- function(data, mytitle) {
+  ggplot(data, aes(x = n, y = MSE, color = Model)) + 
+  geom_point() + 
+  geom_line() + 
+  ggtitle(mytitle) +
+  theme(panel.grid = element_blank(),
+        panel.background = element_blank(),
+        plot.title = element_text(hjust = 0.5),
+        legend.position = "none") + 
+  geom_text(aes(y = ifelse(n==5e2, MSE, NA), x = 5e2, label = Model, vjust = -0.5), size = 3) +
+  scale_color_brewer(palette = "Dark2")
+}
+```  
+
+```{r, echo=FALSE, warning=FALSE}
+myplot(data_lin, "y= 2*x")
+```  
+
+*As we can see, the linear model, which matches the true function y, has the lowest RMSE at every dataset size. The more "wiggly" algorithms such as NW and Local Polynomial do worst when the true f(x) is linear.*  
+
+
+```{r, echo=FALSE, warning=FALSE}
+myplot(data_sin2pi, "y=sin(2*pi*x)")
+```  
+
+*When f(x) is not linear, linear regression does not get better with a larger sample size. In this case, Polynomial Regression of degree 3 and 4 seem to outperform the rest, which makes sense given the tru f(x) is $\sin(2\pi x)$.*  
+
+
+```{r, echo=FALSE, warning=FALSE}
+myplot(data_sin30, "y=sin(30*x)")
+```  
+
+*When the true f(x) is highly non linear, the wiggly algorithms capture the the true functional form better. Notice that Local Polynomial d1, Local Polynomial d2, and NW Box are the three top performers on 100 replications of datasets of size 500, 1000, 2000, and 5000.*  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
